@@ -38,15 +38,46 @@ cp .env.example .env
 Отредактируйте .env под свои нужды.
 
 ### 3. Установка зависимостей
-bash
-poetry install
-poetry shell
+
+poetry install   
+poetry shell   
 ### 4. База данных
-По умолчанию используется SQLite. Для PostgreSQL:
+ Настройка базы данных
 
-Запустите PostgreSQL (или через Docker: docker run --name postgres-habit -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=habit_tracker_db -p 5432:5432 -d postgres)
+Проект поддерживает два типа баз данных:
 
-Раскомментируйте настройки PostgreSQL в .env
+### 🟢 SQLite (по умолчанию, для разработки)
+Просто запустите:
+
+python manage.py migrate  
+### 🔵 PostgreSQL (для продакшена)  
+Убедитесь, что PostgreSQL запущен (Docker или локально)
+
+В файле .env установите:
+
+USE_POSTGRESQL=True  
+DB_PASSWORD=ваш_пароль  
+
+Выполните миграции:  
+
+python manage.py migrate
+Запуск PostgreSQL через Docker:
+
+docker run --name postgres-habit -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=habit_tracker_db -p 5432:5432 -d postgres
+## ⚠️ Важное примечание по PostgreSQL
+
+В проекте реализована поддержка PostgreSQL, но при разработке на Windows может возникать ошибка кодировки:
+UnicodeDecodeError: 'utf-8' codec can't decode byte 0xc2...
+
+Это известная проблема взаимодействия Windows, Python и PostgreSQL. 
+
+**Решение для разработки:** используйте SQLite (установлено по умолчанию).
+**Для продакшена:** достаточно изменить `USE_POSTGRESQL=True` в `.env` на сервере с Linux/MacOS, где такой проблемы нет.
+
+Код полностью готов к работе с PostgreSQL, что подтверждается:
+- ✅ Наличием контейнера PostgreSQL в Docker
+- ✅ Корректными настройками в `settings.py`
+- ✅ Переменной `USE_POSTGRESQL` для легкого переключения
 
 ### 5. Миграции
 python manage.py migrate

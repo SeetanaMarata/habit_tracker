@@ -69,13 +69,35 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# Database
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+# Database configuration - умный выбор между SQLite и PostgreSQL
+USE_POSTGRESQL = os.getenv("USE_POSTGRESQL", "False") == "True"
+
+if USE_POSTGRESQL:
+    # Для PostgreSQL (продакшен)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DB_NAME", "habit_tracker_db"),
+            "USER": os.getenv("DB_USER", "postgres"),
+            "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
+            "HOST": os.getenv("DB_HOST", "localhost"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+            "OPTIONS": {
+                "client_encoding": "UTF8",
+            },
+        }
     }
-}
+    print("🔵 Using PostgreSQL database")
+else:
+    # Для разработки (SQLite)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+    print("🟢 Using SQLite database")
+
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
