@@ -1,6 +1,6 @@
-# Habit Tracker API
+# Habit Tracker
 
-Backend-часть SPA веб-приложения для трекинга полезных привычек, вдохновленного книгой Джеймса Клира «Атомные привычки».
+Приложение для отслеживания привычек с Telegram-напоминаниями.
 
 ## Функциональность
 
@@ -23,22 +23,29 @@ Backend-часть SPA веб-приложения для трекинга по�
 - Celery + Redis
 - Telegram Bot API
 - pytest (тестирование)
+- Docker, Docker Compose
+- GitHub Actions (CI/CD)
+- - Nginx, Gunicorn
 
 ## Установка и запуск
 
 ### 1. Клонирование репозитория
-
-git clone https://github.com/levonalanas/habit_tracker.git
+```bash
+git clone https://github.com/SeetanaMarata/habit_tracker.git
 cd habit_tracker
-### 2. Настройка окружения
-Скопируйте пример файла с переменными окружения:
-
-bash
+```
+2. Настроить окружение:
+```bash
 cp .env.example .env
-Отредактируйте .env под свои нужды.
+# Отредактировать .env (токены, пароли)
+```
 
-### 3. Установка зависимостей
-
+3. Запустить через Docker Compose:
+```bash
+docker compose up -d
+```
+Приложение будет доступно: http://localhost
+Установка зависимостей
 poetry install   
 poetry shell   
 ### 4. База данных
@@ -106,7 +113,64 @@ PUT	/api/habits/{id}/	Обновление привычки	Только вла�
 DELETE	/api/habits/{id}/	Удаление привычки	Только владелец   
 POST	/api/tg/	Привязка Telegram	Только авторизованные   
 POST	/api/tg/{id}/verify/	Подтверждение Telegram	Только владелец   
+## ☁️ Деплой на сервер
 
+Проект настроен на автоматический деплой через GitHub Actions.
+
+### Требования к серверу:
+- Ubuntu 22.04+
+- Docker и Docker Compose
+- Открытые порты: 22 (SSH), 80 (HTTP)
+
+### Переменные окружения (GitHub Secrets):
+- `DOCKER_USERNAME` — логин Docker Hub
+- `DOCKER_PASSWORD` — пароль Docker Hub
+- `SERVER_HOST` — IP сервера
+- `SERVER_USER` — пользователь для SSH
+- `SSH_PRIVATE_KEY` — приватный SSH-ключ
+- `SECRET_KEY` — секретный ключ Django
+- `TELEGRAM_TOKEN` — токен бота
+- `DB_PASSWORD` — пароль PostgreSQL
+
+### Процесс деплоя:
+1. Пуш в ветку `develop` или `main`
+2. GitHub Actions запускает тесты и линтер
+3. Сборка Docker-образов и пуш на Docker Hub
+4. Подключение по SSH к серверу
+5. Копирование файлов и запуск контейнеров
+
+## 🔧 Переменные окружения (.env)
+
+```env
+SECRET_KEY=your-secret-key
+DEBUG=False
+USE_POSTGRESQL=True
+
+DB_NAME=habit_tracker
+DB_USER=habit_user
+DB_PASSWORD=your-password
+DB_HOST=db
+DB_PORT=5432
+
+TELEGRAM_TOKEN=your-bot-token
+REDIS_URL=redis://redis:6379/0
+```
+
+## 🐳 Docker Compose сервисы
+
+- `db` — PostgreSQL
+- `redis` — Redis
+- `web` — Django + Gunicorn
+- `celery_worker` — Celery worker
+- `celery_beat` — Celery beat
+- `nginx` — Nginx (reverse proxy)
+
+## 🌐 Доступные endpoints
+
+- Главная страница: http://176.123.162.103
+- Админка: http://176.123.162.103/admin/
+- API: http://176.123.162.103/api/habits/
+- Публичные привычки: http://176.123.162.103/api/habits/public/
 ## Telegram бот
 Найдите в Telegram @BotFather
 
@@ -122,7 +186,9 @@ POST	/api/tg/{id}/verify/	Подтверждение Telegram	Только вл�
 
 pytest  
 pytest --cov=habits --cov=tg  # с проверкой покрытия  
-
+```bash
+pytest --cov=. --cov-report=html
+```
 #### Разработчик   
 levonalanas   
 

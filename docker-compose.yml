@@ -1,0 +1,130 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: habit_postgres
+    environment:
+      POSTGRES_DB: habit_tracker
+      POSTGRES_USER: habit_user
+      POSTGRES_PASSWORD: habit_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"  # Используем 5433 на хосте, чтобы не конфликтовать с локальным PostgreSQL
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U habit_user"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    container_name: habit_redis
+    ports:
+      - "6380:6379"  # Используем 6380 на хосте
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build: .
+    container_name: habit_web
+    command: ["./entrypoint.sh"]
+    volumes:
+      - .:/app
+      - static_volume:/app/static
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY}
+      - USE_POSTGRESQL=True
+      - DB_NAME=habit_tracker
+      - DB_USER=habit_user
+      - DB_PASSWORD=habit_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_worker:
+    build: .
+    container_name: habit_celery_worker
+    command: celery -A config worker --loglevel=info --pool=solo
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY}
+      - USE_POSTGRESQL=True
+      - DB_NAME=habit_tracker
+      - DB_USER=habit_user
+      - DB_PASSWORD=habit_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_beat:
+    build: .
+    container_name: habit_celery_beat
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - .:/app
+    environment:
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY}
+      - USE_POSTGRESQL=True
+      - DB_NAME=habit_tracker
+      - DB_USER=habit_user
+      - DB_PASSWORD=habit_password
+      - DB_HOST=db
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.25
+    container_name: habit_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/static
+      - media_volume:/media
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
+

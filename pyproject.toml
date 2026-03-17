@@ -3,6 +3,7 @@ name = "habit-tracker"
 version = "0.1.0"
 description = ""
 authors = ["Swetlana Mirzoeva <levka008@mail.ru>"]
+package-mode = false
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -20,10 +21,19 @@ pytest-django = "^4.12.0"
 pytest-cov = "^7.0.0"
 factory-boy = "^3.3.3"
 psycopg2-binary = "^2.9.11"
+gunicorn = "^25.1.0"
 
 [tool.poetry.group.lint.dependencies]
 isort = "^7.0.0"
 black = "^26.1.0"
+flake8 = "^7.3.0"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^9.0.2"
+pytest-django = "^4.12.0"
+pytest-cov = "^7.0.0"
+factory-boy = "^3.3.3"
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"

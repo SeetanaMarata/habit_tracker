@@ -3,9 +3,12 @@ from datetime import timedelta
 import pytest
 from rest_framework.serializers import ValidationError
 
-from habits.validators import (validate_duration, validate_periodicity,
-                               validate_pleasant_habit,
-                               validate_reward_and_linked_habit)
+from habits.validators import (
+    validate_duration,
+    validate_periodicity,
+    validate_pleasant_habit,
+    validate_reward_and_linked_habit,
+)
 
 
 class TestValidators:
