@@ -4,7 +4,7 @@ on:
   push:
     branches: [ develop, main, feature ]
   pull_request:
-    branches: [ develop, main ]
+    branches: [ develop, main]
 
 jobs:
   test:
@@ -43,8 +43,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install poetry
         poetry self add poetry-plugin-export
-        poetry export -f requirements.txt --output requirements.txt --without-hashes
-        ls -la  # ← посмотрим, есть ли файл
+        poetry export -f requirements.txt --output requirements.txt --without-hashes --with=lint --with=test
         pip install -r requirements.txt
 
     - name: Run linter (flake8)
