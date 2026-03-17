@@ -105,6 +105,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          mkdir -p /home/${{ secrets.SERVER_USER }}/habit_tracker
           cd /home/${{ secrets.SERVER_USER }}/habit_tracker
           
           # Скачиваем актуальные файлы
