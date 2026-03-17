@@ -105,14 +105,20 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          # Создаём папку
           mkdir -p /home/${{ secrets.SERVER_USER }}/habit_tracker
+            
+          # Копируем файлы проекта (важно!)
           cd /home/${{ secrets.SERVER_USER }}/habit_tracker
-          
-          # Скачиваем актуальные файлы
-          docker-compose down
-          docker-compose pull
-          
-          # Обновляем .env с секретами
+          rm -rf *  # очищаем старые файлы
+            
+          # Скачиваем свежий код из репозитория
+          git clone https://github.com/SeetanaMarata/habit_tracker.git temp
+          cp -r temp/* .
+          cp -r temp/.github .
+          rm -rf temp
+            
+          # Создаём .env
           echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" > .env
           echo "TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}" >> .env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
@@ -123,9 +129,8 @@ jobs:
           echo "DB_HOST=db" >> .env
           echo "DB_PORT=5432" >> .env
           echo "REDIS_URL=redis://redis:6379/0" >> .env
-          
+            
           # Запускаем контейнеры
-          docker-compose up -d
-          
-          # Очищаем старые образы
-          docker system prune -f
+           docker compose pull
+           docker compose up -d
+           docker system prune -f
