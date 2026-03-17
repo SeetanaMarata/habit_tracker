@@ -121,8 +121,18 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# Static files
-STATIC_URL = "static/"
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Для продакшена (когда DEBUG=False)
+if not DEBUG:
+    STATIC_ROOT = '/static/'
+    MEDIA_ROOT = '/media/'
 
 # REST Framework settings
 REST_FRAMEWORK = {
